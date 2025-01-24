@@ -11,22 +11,26 @@ router.post('/login', async (req, res) => {
   try {
     const { username, password } = req.body;
     const adminUser = await Admin.findOne({ username });
+    
     if (!adminUser) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
+
     const isMatch = await bcrypt.compare(password, adminUser.passwordHash);
     if (!isMatch) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
-    // Create JWT
+
     const token = jwt.sign(
       { adminId: adminUser._id },
-       JWT_SECRET,
+      JWT_SECRET,
       { expiresIn: '1d' }
     );
+
+    // Send token in response
     return res.json({ token });
   } catch (error) {
-    console.error(error);
+    console.error('Login error:', error);
     return res.status(500).json({ error: 'Server error during login' });
   }
 });
